@@ -4,32 +4,43 @@ import axios from "axios";
 import logo1 from "./img/rainbow.png"
 import logo2 from "./img/sun.png"
 import logo3 from "./img/dust.png"
+import base from "./img/think.png"
 import CreateData from './CreateData'
+
+
+
 /* eslint-disable */
 const API_KYE = `e1d62e89d08eee1fef474296c2e13534`;
 
 function App() {
-    const [location, setLocation] = useState("서울");
+
+    const [location, setLocation] = useState('서울');
+    const [coordinates, setCoordinate] = useState(['서울']);
+
+
     const url = `http://api.openweathermap.org/geo/1.0/direct?q=${location}&limit=5&appid=${API_KYE}`;
 
     //위도 경도
-    const [latitude, setLatitude] = useState('37.5666791');
-    const [longitude, setLongitude] = useState('126.9784147')
+    const [latitude, setLatitude] = useState('37.5665');
+    const [longitude, setLongitude] = useState('126.978');
 
-    // const [latitude, setLatitude] = useState();
-    // const [longitude, setLongitude] = useState();
+    const locations = () => {
+        setCoordinate([location, ...coordinates]);
+    }
+
 
     const searchCoordinate = async () => {
         if ("Click") {
             try {
                 const data = await axios({
-                    method: "get",
-                    url: url,
+                    method: "get", url: url,
                 });
+
 
                 if (data["data"][0] != null) {
                     setLatitude(data["data"][0]["lat"]);
                     setLongitude(data["data"][0]["lon"]);
+
                 } else {
                     setPm10(0);
                     setPm2_5(0);
@@ -42,7 +53,6 @@ function App() {
         }
     };
 
-
     const [pm2_5, setPm2_5] = useState(0);
     const [pm10, setPm10] = useState(0);
     const newUrl = `http://api.openweathermap.org/data/2.5/air_pollution?lat=${latitude}&lon=${longitude}&appid=${API_KYE}`;
@@ -50,78 +60,103 @@ function App() {
 
 
     const searchWeather = async () => {
+        const weatherData = await axios({
+            method: "get", url: newUrl,
+        });
+        setPm10(weatherData["data"]["list"][0]["components"]["pm10"]);
+        setPm2_5(weatherData["data"]["list"][0]["components"]["pm2_5"]);
 
-        try {
-            const weatherData = await axios({
-                method: "get",
-                url: newUrl,
-            });
-            setPm10(weatherData["data"]["list"][0]["components"]["pm10"]);
-            setPm2_5(weatherData["data"]["list"][0]["components"]["pm2_5"]);
+    }
 
-        } catch (arr) {
-            console.error('여기서 에러남')
+
+
+
+
+    const [state, setState] = useState(base);
+
+    const stateQuery = () => {
+        // pm10 >0 && pm10 < 30 ? setState(logo1) : (pm10 > 29 && pm10 < 80) ? setState(logo2) : setState(logo3);
+        // pm10>=80 ? setState(logo3) : (pm10<80 && pm10>=30 )? setState(logo2):setState(logo1)
+        if (pm10 > 0 && pm10 < 30) {
+            setState(logo1)
+        } else if (pm10 > 0 && pm10 < 30) {
+            setState(logo2)
+        } else {
+            setState(logo3)
         }
     }
 
+    const submit = () => {
+        onCreate(state, location, pm10, pm2_5);
+    }
 
-    const [state, setState] = useState('');
-    const stateQuery = () => {
-        pm10 < 30 ? setState(logo1) : (pm10 > 29 && pm10 < 80) ? setState(logo2) : setState(logo3);
+    const [data, setData] = useState([]);
+    const onCreate = (state, location, pm10, pm2_5) => {
+
+        const newData = {
+            state, location, pm10, pm2_5
+        }
+        setData([newData, ...data])
     }
 
     useEffect(() => {
-        searchWeather();
+        searchWeather()
     }, [latitude])
 
-
     useEffect(() => {
-        stateQuery();
+        stateQuery()
+        submit()
     }, [pm10])
 
 
+    useEffect(()=>{
 
+    },[data])
 
-
-    return (
-        <AppWrap>
-            <div className="appContentWrap">
-                <div className="inputContainer">
-                    <input
-                        type="text"
-                        placeholder="도시를 입력하세요."
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                    />
-                    <button
-                        onClick={searchCoordinate}
-                    >버튼을 눌러 지역의 미세먼지를 알아보세요!
-                    </button>
-                </div>
-               {/*<CreateData state={state} lotaion={lotation} pm10={pm10} pm_25={pm2_5}></CreateData>*/}
-            </div>
-        </AppWrap>
-    );
+    return (<AppWrap>
+        <div className="inputContainer">
+            <input
+                type="text"
+                placeholder="도시를 입력하세요."
+                onChange={(e) => setLocation(e.target.value)}
+                value={location}
+            />
+            <button
+                onClick={() => {
+                    searchCoordinate();
+                    locations();
+                }}
+            >오늘의 미세먼지
+            </button>
+        </div>
+        <div>
+                    <CreateData data={data}  onCreat={onCreate} />
+        </div>
+    </AppWrap>);
 }
 
 export default App;
 
 const AppWrap = styled.div`
   font-family: "Adobe 고딕 Std B";
-  width: 300px;
+  width: 500px;
   box-sizing: border-box;
-  margin-left: auto;
-  margin-right: auto;
   text-align: center;
+  margin-top: 100px;
+  margin-right: auto;
+  margin-left: auto;
+
 
   img {
     width: 100px;
+    margin-top: 10px;
   }
 
   .inputContainer {
     width: 300px;
     display: flex;
     flex-wrap: wrap;
+    margin: auto;
   }
 
   input {
@@ -137,16 +172,13 @@ const AppWrap = styled.div`
   }
 
   button {
-    margin-top: 30px;
     border: none;
     background-color: white;
     box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
     border-radius: 10px;
     padding: 5px 10px;
-    margin-right: auto;
-    margin-left: auto;
     cursor: pointer;
-    margin-bottom: 30px;
+    margin: 30px auto 150px;
   }
 
   button:hover {
@@ -156,27 +188,15 @@ const AppWrap = styled.div`
 
   .stateContainer .state {
     font-size: 30px;
+    line-height: 120px;
   }
 
-  .appContentWrap {
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    position: absolute;
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-    border-radius: 10px;
-    padding: 20px;
+  .stateContainer {
     width: 300px;
+    display: flex;
+    margin: 0 auto;
+    justify-content: space-evenly;
+
   }
 
 `;
-
-const ResultWrap = styled.div`
-  margin-top: 30px;
-  padding: 20px;
-  border: 1px black solid;
-  border-radius: 8px;
-
-
-`;
-
