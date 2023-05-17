@@ -126,20 +126,22 @@ export default App;
 
 const AppWrap = styled.div`
   font-family: "Adobe 고딕 Std B";
-  width: 500px;
+  width: 400px;
   box-sizing: border-box;
   text-align: center;
   margin-top: 100px;
   margin-right: auto;
   margin-left: auto;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  border-radius: 30px;
+  padding-top: 10px;
   img {
     width: 100px;
     margin-top: 10px;
   }
 
   .inputContainer {
-    width: 300px;
+    width: 200px;
     display: flex;
     flex-wrap: wrap;
     margin: auto;
