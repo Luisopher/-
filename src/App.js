@@ -132,7 +132,7 @@ const AppWrap = styled.div`
   margin-top: 100px;
   margin-right: auto;
   margin-left: auto;
-
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   img {
     width: 100px;
     margin-top: 10px;
